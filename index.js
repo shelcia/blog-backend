@@ -153,6 +153,7 @@ const blogSchema = Joi.object({
      hearts: Joi.required(),
      comments: Joi.array(),
      category:Joi.string().required(),
+     image:Joi.string().required(),
 });
 
 
@@ -179,7 +180,8 @@ app.post("/blog", async (req, res) => {
     dislikes: req.body.dislikes,
     hearts: req.body.hearts,
     comments: req.body.comments,
-    category:req.body.category
+    category:req.body.category,
+    image:req.body.image
   });
   try {
     await blog.save();
@@ -272,3 +274,5 @@ app.listen(PORT, () => console.log(`server up and running at  ${PORT}`));
 //     "comments": [],
 //     "category":"Web Development"
 // }
+
+// https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png
