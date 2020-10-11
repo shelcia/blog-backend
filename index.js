@@ -38,8 +38,7 @@ app.use(express.json(), cors());
 
 //REGISTER SCHEMA
 const registerSchema = Joi.object({
-    fname: Joi.string().min(3).required(),
-    lname: Joi.string().min(3).required(),
+    name: Joi.string().min(3).required(),
     email: Joi.string().min(6).required().email(),
     password: Joi.string().min(6).required(),
   });
@@ -63,8 +62,7 @@ app.post("/register", async(req,res)=>{
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
   const user = new User({
-    fname: req.body.fname,
-    lname: req.body.lname,
+    name: req.body.name,
     email: req.body.email,
     password: hashedPassword,
   });
@@ -107,7 +105,7 @@ app.post("/signin", async (req, res) => {
       res
         .status(200)
         .header("auth-token", token)
-        .send({ token: token, userId: user._id });
+        .send({ token: token, userId: user._id, name:user.name });
     }
   } catch (error) {
     res.status(400).send({ message: error });
@@ -133,7 +131,7 @@ app.put("/userdetails/edit/:id", async (req, res) => {
   try {
     await User.findOneAndUpdate(
       { _id: req.params.id.toString() },
-      { fname: req.body.fname, lname: req.body.lname }
+      { name: req.body.name }
     );
     res.status(200).send({ message: "successfull" });
   } catch (error) {
@@ -143,6 +141,20 @@ app.put("/userdetails/edit/:id", async (req, res) => {
 
 
 //BLOG RELATED API
+
+//BLOG SCHEMA
+const blogSchema = Joi.object({
+     id: Joi.string().required(),
+     userId: Joi.string().required(),
+     title: Joi.string().required(),
+     content: Joi.string().required(),
+     likes: Joi.required(),
+     dislikes: Joi.required(),
+     hearts: Joi.required(),
+     comments: Joi.array(),
+     category:Joi.string().required(),
+});
+
 
 app.get("/blog", async (req, res) => {
   try {
@@ -155,14 +167,19 @@ app.get("/blog", async (req, res) => {
 });
 
 app.post("/blog", async (req, res) => {
+  const { error } = await blogSchema.validateAsync(req.body);
+  if (error) return res.status(400).send(error);
+
   const blog = new Blog({
     id: req.body.id,
     userId: req.body.userId,
     title: req.body.title,
+    content: req.body.content,
     likes: req.body.likes,
     dislikes: req.body.dislikes,
     hearts: req.body.hearts,
     comments: req.body.comments,
+    category:req.body.category
   });
   try {
     await blog.save();
@@ -192,7 +209,7 @@ app.put("/likes/:id", async (req, res) => {
     );
     res.status(200).send({ message: "successfull" });
   } catch (error) {
-    res.status(500).send({message: error});
+    res.status(500).send({ message: error });
   }
 });
 
@@ -231,5 +248,27 @@ app.get("/myblogs/:id", async (req, res) => {
   }
 });
 
+app.get("/featuredpost", async (req, res) => {
+  try {
+    const results = await Blog.sort("likes").exec()
+    res.status(200).send(results);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
 
 app.listen(PORT, () => console.log(`server up and running at  ${PORT}`));
+
+
+// {
+//     "id": "1234455555",
+//     "userId": "5f820689954d8a3a070bc2f9",
+//     "title": "My New Blog",
+//     "content": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
+//     "likes": 0,
+//     "dislikes": 0,
+//     "hearts": 0,
+//     "comments": [],
+//     "category":"Web Development"
+// }

@@ -1,7 +1,7 @@
 
 const mongoose = require("mongoose");
 
-const postSchema = new mongoose.Schema({
+const blogSchema = new mongoose.Schema({
   //DATE IS THE ID
   id: {
     type: String,
@@ -12,6 +12,10 @@ const postSchema = new mongoose.Schema({
     required: true,
   },
   title: {
+    type: String,
+    required: true,
+  },
+  content: {
     type: String,
     required: true,
   },
@@ -29,7 +33,11 @@ const postSchema = new mongoose.Schema({
   },
   comments: {
     type: Array,
-  }
+  },
+  category: {
+    type: String,
+    required: true,
+  },
 });
 
-module.exports = mongoose.model("Post", postSchema);
+module.exports = mongoose.model("Blog", blogSchema);
