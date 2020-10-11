@@ -167,6 +167,16 @@ app.get("/blog", async (req, res) => {
   }
 });
 
+app.get("/blog/:id", async (req, res) => {
+  try {
+    const blog = await Blog.findOne({ id: req.params.id.toString() }).exec();
+    res.status(200).send(blog);
+  } catch (error) {
+    console.log(error);
+    res.status(404).send({ message: "Error" });
+  }
+});
+
 app.post("/blog", async (req, res) => {
   const { error } = await blogSchema.validateAsync(req.body);
   if (error) return res.status(400).send(error);
@@ -246,7 +256,19 @@ app.get("/myblogs/:id", async (req, res) => {
     }).exec();
     res.status(200).send(results);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(404).send({ message: "Error" });
+  }
+});
+
+app.put("/myblogs/edit/:id", async (req, res) => {
+  try {
+    await Blog.findOneAndUpdate(
+      { id: req.params.id.toString() },
+      { title: req.body.title, content: req.body.content, image: req.body.image }
+    );
+    res.status(200).send({ message: "successfull" });
+  } catch (error) {
+    console.log(error);
   }
 });
 
