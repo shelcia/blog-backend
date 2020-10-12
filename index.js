@@ -272,6 +272,17 @@ app.put("/myblogs/edit/:id", async (req, res) => {
   }
 });
 
+app.put("/myblogs/delete/:id", async (req, res) => {
+  try {
+    await Blog.findOneAndDelete(
+      { id: req.params.id.toString() },
+    );
+    res.status(200).send({ message: "successfull" });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 app.get("/featuredpost", async (req, res) => {
   try {
     const results = await Blog.sort("likes").exec()
