@@ -272,7 +272,7 @@ app.put("/myblogs/edit/:id", async (req, res) => {
   }
 });
 
-app.put("/myblogs/delete/:id", async (req, res) => {
+app.delete("/myblogs/delete/:id", async (req, res) => {
   try {
     await Blog.findOneAndDelete(
       { id: req.params.id.toString() },
