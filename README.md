@@ -1,4 +1,4 @@
-![blog-backend](https://socialify.git.ci/shelcia/blog-backend/image?description=1&font=Raleway&language=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Dark)
+![bloggram-backend](https://socialify.git.ci/shelcia/blog-backend/image?description=1&font=Raleway&language=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Dark)
 
 
 <div align="text">
