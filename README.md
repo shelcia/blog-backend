@@ -28,10 +28,7 @@ https://bloggram-backend.herokuapp.com/
 
 ### To work with this repo
 
-
-- Clone this repo 
-
-- Run <code>npm install</code>
-
-- Then Run <code>npm start</code>
-
+1. Clone this repo with `git clone https://github.com/shelcia/dynamic-portfolio-backend.git`
+2. Enter the folder `cd folder_name`
+3. Download Dependencies `npm install`
+4. Run the repo `node index.js` or `nodemon index.js`
