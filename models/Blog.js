@@ -1,19 +1,16 @@
-
 const mongoose = require("mongoose");
 
 const blogSchema = new mongoose.Schema({
   //DATE IS THE ID
-  id: {
-    type: String,
-    required: true,
-  },
   userId: {
     type: String,
     required: true,
   },
   title: {
     type: String,
-    required: true,
+  },
+  desc: {
+    type: String,
   },
   content: {
     type: String,
@@ -23,25 +20,21 @@ const blogSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  dislikes: {
-    type: Number,
-    required: true,
-  },
-  hearts: {
-    type: Number,
-    required: true,
-  },
   comments: {
     type: Array,
   },
-  category: {
-    type: String,
-    required: true,
+  tags: {
+    type: Array,
   },
-   image: {
+  image: {
+    type: Buffer,
+  },
+  type: {
     type: String,
     required: true,
   },
 });
+
+// module.exports = mongoose.model("Blog", blogSchema);
 
 module.exports = mongoose.model("Blog", blogSchema);
