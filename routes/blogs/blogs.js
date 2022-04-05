@@ -43,28 +43,27 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { error } = await blogSchema.validateAsync(req.body);
-  if (error) {
-    res.status(200).send({ status: "400", message: error });
-    return;
-  }
-
-  // const blog = new Blog({
-  //   // id: req.body.id,
-  //   userId: req.body.userId,
-  //   title: req.body.title,
-  //   content: req.body.content,
-  //   likes: req.body.likes,
-  //   dislikes: req.body.dislikes,
-  //   hearts: req.body.hearts,
-  //   comments: req.body.comments,
-  //   category: req.body.category,
-  //   // image: req.body.image,
-  // });
-
-  const blog = new Blog(req.body);
-
   try {
+    const { error } = await blogSchema.validateAsync(req.body);
+    if (error) {
+      res.status(200).send({ status: "400", message: error });
+      return;
+    }
+
+    // const blog = new Blog({
+    //   // id: req.body.id,
+    //   userId: req.body.userId,
+    //   title: req.body.title,
+    //   content: req.body.content,
+    //   likes: req.body.likes,
+    //   dislikes: req.body.dislikes,
+    //   hearts: req.body.hearts,
+    //   comments: req.body.comments,
+    //   category: req.body.category,
+    //   // image: req.body.image,
+    // });
+
+    const blog = new Blog(req.body);
     await blog.save();
     res.status(200).send({ status: "200", message: "Successfully Created" });
   } catch (error) {

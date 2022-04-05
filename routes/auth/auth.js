@@ -45,7 +45,18 @@ router.post("/register", async (req, res) => {
     //THE USER IS ADDED
     else {
       await user.save();
-      res.status(200).send({ status: 200, message: "user created" });
+      // res.status(200).send({ status: 200, message: "user created" });
+      //CREATE TOKEN
+      const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+      res
+        .status(200)
+        .header("auth-token", token)
+        .send({
+          status: "200",
+          token: token,
+          userId: user._id,
+          name: user.name,
+        });
     }
   } catch (error) {
     res.status(400).send(error);
