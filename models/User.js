@@ -25,6 +25,9 @@ const userSchema = new mongoose.Schema({
   likedBlogs: {
     type: Array,
   },
+  savedBlogs: {
+    type: Array,
+  },
   date: {
     type: Date,
     default: Date.now(),

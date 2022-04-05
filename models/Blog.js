@@ -21,7 +21,7 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   comments: {
-    type: Array,
+    type: [{ userId: String, comment: String, date: Date }],
   },
   tags: {
     type: Array,
