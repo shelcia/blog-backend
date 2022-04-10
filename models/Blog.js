@@ -17,11 +17,29 @@ const blogSchema = new mongoose.Schema({
     required: true,
   },
   likes: {
-    type: Number,
+    type: [
+      {
+        userId: String,
+        date: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
     required: true,
   },
   comments: {
-    type: [{ userId: String, comment: String, date: Date }],
+    type: [
+      {
+        id: String,
+        userId: String,
+        comment: String,
+        date: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
   },
   tags: {
     type: Array,
@@ -32,6 +50,10 @@ const blogSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
+  },
+  date: {
+    type: Date,
+    default: Date.now(),
   },
 });
 
