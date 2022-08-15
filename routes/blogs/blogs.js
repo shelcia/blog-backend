@@ -25,7 +25,7 @@ const blogSchema = Joi.object({
 router.get("/featuredposts", async (req, res) => {
   try {
     // const results = await Blog.find({}).where("type").equals("PUBLISHED");
-    const results = await Blog.find({})
+    const results = await Blog.find({ image: 0, content: 0 })
       .sort({ likes: -1 })
       .where("type")
       .equals("PUBLISHED")
