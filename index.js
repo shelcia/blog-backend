@@ -30,7 +30,12 @@ mongoose.connect(
 
 //MIDDLEWARE
 
-app.use(express.json(), cors());
+app.use(
+  express.json(),
+  cors({
+    origin: "*",
+  })
+);
 
 //ROUTE MIDDLEWARE
 
