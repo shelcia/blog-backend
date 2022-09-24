@@ -1,6 +1,5 @@
 ![blog-backend](https://socialify.git.ci/shelcia/blog-backend/image?description=1&font=Raleway&language=1&owner=1&pattern=Charlie%20Brown&stargazers=1&theme=Dark)
 
-
 <div align="text">
   
 ![Javascript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
@@ -13,18 +12,15 @@
 
 # Bloggram Backend
 
-
 Backend built with ExpressJS for Bloggram
 
-
-## Front End Deployment 
+## Front End Deployment
 
 https://bloggram.netlify.app/
 
-## Backend End Deployment 
+## Backend End Deployment
 
-https://bloggram-backend.herokuapp.com/
-
+https://long-cyan-spider-tux.cyclic.app/
 
 ### To work with this repo
 
