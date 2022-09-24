@@ -30,12 +30,7 @@ mongoose.connect(
 
 //MIDDLEWARE
 
-app.use(
-  express.json(),
-  cors({
-    origin: "*",
-  })
-);
+app.use(express.json(), cors());
 
 //ROUTE MIDDLEWARE
 
@@ -45,16 +40,6 @@ app.use("/api/user", userRoute);
 
 app.listen(PORT, () => console.log(`server up and running at  ${PORT}`));
 
-// {
-//     "id": "1234455555",
-//     "userId": "5f820689954d8a3a070bc2f9",
-//     "title": "My New Blog",
-//     "content": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.",
-//     "likes": 0,
-//     "dislikes": 0,
-//     "hearts": 0,
-//     "comments": [],
-//     "category":"Web Development"
-// }
-
-// https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png
+app.get("/", (req, res) => {
+  res.send(`<p>Hey! It's working</p>`);
+});

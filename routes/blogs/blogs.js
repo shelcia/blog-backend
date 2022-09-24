@@ -22,17 +22,28 @@ const blogSchema = Joi.object({
 
 //BLOG RELATED API
 
+// get all blogs
+router.get("/", async (req, res) => {
+  try {
+    const results = await Blog.find({}).where("type").equals("PUBLISHED");
+    res.status(200).send({ status: "200", message: results });
+  } catch (error) {
+    // console.log(error);
+    res.status(200).send({ status: "500", message: "Error" });
+  }
+});
+
 router.get("/featuredposts", async (req, res) => {
+  const results = await Blog.find()
+    .sort({ likes: -1 })
+    .where("type")
+    .equals("PUBLISHED")
+    .limit(3);
+
+  // console.log(results);
+  res.status(200).send({ status: "200", message: results });
   try {
     // const results = await Blog.find({}).where("type").equals("PUBLISHED");
-    const results = await Blog.find({ image: 0, content: 0 })
-      .sort({ likes: -1 })
-      .where("type")
-      .equals("PUBLISHED")
-      .limit(3);
-
-    // console.log(results);
-    res.status(200).send({ status: "200", message: results });
   } catch (error) {
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
   }
@@ -45,17 +56,6 @@ router.get("/image/:id", async (req, res) => {
     res.status(200).send(result.image);
   } catch (error) {
     res.status(200).send({ status: "400", message: error });
-  }
-});
-
-// get all blogs
-router.get("/", async (req, res) => {
-  try {
-    const results = await Blog.find({}).where("type").equals("PUBLISHED");
-    res.status(200).send({ status: "200", message: results });
-  } catch (error) {
-    // console.log(error);
-    res.status(200).send({ status: "500", message: "Error" });
   }
 });
 
