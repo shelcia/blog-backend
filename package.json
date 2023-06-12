@@ -17,7 +17,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^5.1.0",
-    "mongoose": "^5.11.15",
+    "mongoose": "^7.2.4",
     "multer": "^1.4.5-lts.1"
   }
 }
