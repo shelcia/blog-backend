@@ -24,7 +24,10 @@ router.post("/register", async (req, res) => {
   //CHECK IF MAIL ALREADY EXISTS
 
   const emailExist = await User.findOne({ email: req.body.email });
-  if (emailExist) res.status(400).send({ message: "Email Already Exists" });
+  if (emailExist) {
+    res.status(200).json({ status: 400, message: "Email Already Exists" });
+    return;
+  }
 
   //HASHING THE PASSWORD
 
@@ -48,18 +51,17 @@ router.post("/register", async (req, res) => {
       // res.status(200).send({ status: 200, message: "user created" });
       //CREATE TOKEN
       const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-      res
-        .status(200)
-        .header("auth-token", token)
-        .send({
-          status: "200",
-          token: token,
-          userId: user._id,
-          name: user.name,
-        });
+      res.status(200).header("auth-token", token).json({
+        status: "200",
+        token: token,
+        userId: user._id,
+        name: user.name,
+        uname: user.uname,
+      });
     }
   } catch (error) {
-    res.status(400).send(error);
+    console.log("rrr");
+    // res.status(400).json(error);
   }
 });
 
@@ -81,14 +83,18 @@ router.post("/signin", async (req, res) => {
     return;
   }
   const { error } = await loginSchema.validateAsync(req.body);
-  if (error) return res.status(200).send({ status: "400", message: error });
-  else {
+  if (error) {
+    res.status(200).send({ status: "400", message: error });
+  } else {
     //CREATE TOKEN
     const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-    res
-      .status(200)
-      .header("auth-token", token)
-      .send({ status: "200", token: token, userId: user._id, name: user.name });
+    res.status(200).header("auth-token", token).send({
+      status: "200",
+      token: token,
+      userId: user._id,
+      name: user.name,
+      uname: user.uname,
+    });
   }
 
   try {

@@ -6,6 +6,9 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  uname: {
+    type: String,
+  },
   title: {
     type: String,
   },
@@ -14,7 +17,7 @@ const blogSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true,
+    // required: true,
   },
   likes: {
     type: [
@@ -26,7 +29,7 @@ const blogSchema = new mongoose.Schema({
         },
       },
     ],
-    required: true,
+    // required: true,
   },
   comments: {
     type: [
@@ -48,8 +51,24 @@ const blogSchema = new mongoose.Schema({
     type: Buffer,
   },
   type: {
-    type: String,
+    type: String, // PUBLSIHED or DRAFT
     required: true,
+  },
+  contentHistory: {
+    type: [
+      {
+        id: String,
+        userId: String,
+        title: String,
+        desc: String,
+        type: String,
+        image: Buffer,
+        date: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
   },
   date: {
     type: Date,

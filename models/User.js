@@ -2,12 +2,17 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   avatar: {
-    type: Object,
+    type: Buffer,
   },
   name: {
     type: String,
     required: true,
     min: 6,
+    max: 255,
+  },
+  uname: {
+    type: String,
+    required: true,
     max: 255,
   },
   email: {
@@ -21,6 +26,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     max: 1024,
     min: 6,
+  },
+  desc: {
+    type: String,
+    min: 2,
   },
   likedBlogs: {
     type: Array,

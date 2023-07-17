@@ -9,6 +9,7 @@ const User = require("../../models/User");
 const blogSchema = Joi.object({
   // id: Joi.string().required(),
   userId: Joi.string().required(),
+  uname: Joi.string().required(),
   title: Joi.string().required(),
   desc: Joi.string().required(),
   content: Joi.string().required(),
@@ -59,25 +60,30 @@ router.get("/image/:id", async (req, res) => {
   }
 });
 
+//Add Blogs
 router.post("/", handleImageUpload, async (req, res) => {
-  // console.log(req.body);
-  const { error } = await blogSchema.validateAsync(req.body);
-  if (error) {
-    res.status(200).send({ status: "400", message: error });
-    return;
-  }
-
-  let updatedBlog = req.body;
-
-  if (req.file) updatedBlog.image = req.file.buffer;
-  updatedBlog.comments = [];
-  updatedBlog.likes = [];
-  updatedBlog.tags = JSON.parse(updatedBlog.tags);
-
-  const blog = new Blog(updatedBlog);
-  await blog.save();
-  res.status(200).send({ status: "200", message: "Successfully Created" });
   try {
+    // console.log(req.body);
+    if (req.body.type === "PUBLISHED") {
+      const { error } = await blogSchema.validateAsync(req.body);
+      if (error) {
+        res.status(200).send({ status: "400", message: error });
+        return;
+      }
+    }
+
+    let updatedBlog = req.body;
+
+    if (req.file) updatedBlog.image = req.file.buffer;
+    updatedBlog.comments = [];
+    updatedBlog.likes = [];
+    updatedBlog.tags = JSON.parse(updatedBlog.tags);
+
+    // console.log(updatedBlog);
+
+    const blog = new Blog(updatedBlog);
+    await blog.save();
+    res.status(200).send({ status: "200", message: "Successfully Created" });
   } catch (error) {
     console.log(error);
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
@@ -88,9 +94,11 @@ router.post("/", handleImageUpload, async (req, res) => {
 
 router.put("/blog/:id", handleImageUpload, async (req, res) => {
   let updatedBlog = req.body;
-
-  if (req.file) updatedBlog.image = req.file.buffer;
   try {
+    if (req.body?.tags) {
+      updatedBlog.tags = JSON.parse(updatedBlog.tags);
+    }
+    if (req.file) updatedBlog.image = req.file.buffer;
     const blog = await Blog.findById(req.params.id).exec();
     blog.set(updatedBlog);
     const result = await blog.save();
@@ -217,7 +225,7 @@ router.get("/myblogs/:id", async (req, res) => {
   try {
     const results = await Blog.find({
       userId: req.params.id,
-    }).exec();
+    }).select({ userId: 1, title: 1, desc: 1, tags: 1, type: 1, date: 1 });
     res.status(200).send({ status: "200", message: results });
   } catch (error) {
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
@@ -227,8 +235,38 @@ router.get("/myblogs/:id", async (req, res) => {
 // get blog by id
 router.get("/:id", async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).exec();
+    const blog = await Blog.findById(req.params.id).select({
+      userId: 1,
+      title: 1,
+      desc: 1,
+      tags: 1,
+      type: 1,
+      date: 1,
+      content: 1,
+      likes: 1,
+      comments: 1,
+    });
     res.status(200).send({ status: "200", message: blog });
+  } catch (error) {
+    console.log(error);
+    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+  }
+});
+
+router.get("/by-uname/:id", async (req, res) => {
+  try {
+    const blogs = await Blog.find({ uname: req.params.id }).select({
+      userId: 1,
+      title: 1,
+      desc: 1,
+      tags: 1,
+      type: 1,
+      date: 1,
+      content: 1,
+      likes: 1,
+      // comments: 1,
+    });
+    res.status(200).send({ status: "200", message: blogs });
   } catch (error) {
     console.log(error);
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
@@ -254,9 +292,10 @@ router.put("/myblogs/edit/:id", async (req, res) => {
   }
 });
 
-router.delete("/myblogs/delete/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
-    await Blog.findOneAndDelete({ id: req.params.id.toString() });
+    // await Blog.findOneAndDelete({ id: req.params.id.toString() });
+    await Blog.findByIdAndDelete(req.params.id);
     res
       .status(200)
       .send({ status: "200", message: "Successfully Deleted the Blog" });
