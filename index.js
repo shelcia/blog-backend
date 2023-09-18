@@ -3,9 +3,9 @@ const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const fs = require("fs");
-const path = require("path");
-const morgan = require("morgan");
+// const fs = require("fs");
+// const path = require("path");
+// const morgan = require("morgan");
 
 const dotenv = require("dotenv");
 const PORT = process.env.PORT || 8000;
@@ -34,17 +34,17 @@ mongoose
     console.error("Error connecting to MongoDB:", error);
   });
 
-const accessLogStream = fs.createWriteStream(
-  path.join(__dirname, "access.log"),
-  { flags: "a" }
-);
+// const accessLogStream = fs.createWriteStream(
+//   path.join(__dirname, "access.log"),
+//   { flags: "a" }
+// );
 
 //MIDDLEWARE
 
 app.use(express.json(), cors());
 
 // setup the logger
-app.use(morgan("combined", { stream: accessLogStream }));
+// app.use(morgan("combined", { stream: accessLogStream }));
 
 //ROUTE MIDDLEWARE
 
