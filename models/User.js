@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
+  image: {
+    type: Buffer,
+  },
+  //needs to be removed
   avatar: {
     type: Buffer,
   },
@@ -12,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   uname: {
     type: String,
-    required: true,
+    // required: true,
     max: 255,
   },
   email: {
@@ -32,10 +36,26 @@ const userSchema = new mongoose.Schema({
     min: 2,
   },
   likedBlogs: {
-    type: Array,
+    type: [
+      {
+        blogId: String,
+        date: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
   },
   savedBlogs: {
-    type: Array,
+    type: [
+      {
+        blogId: String,
+        date: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
   },
   date: {
     type: Date,

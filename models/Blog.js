@@ -29,7 +29,17 @@ const blogSchema = new mongoose.Schema({
         },
       },
     ],
-    // required: true,
+  },
+  saved: {
+    type: [
+      {
+        userId: String,
+        date: {
+          type: Date,
+          default: Date.now(),
+        },
+      },
+    ],
   },
   comments: {
     type: [
