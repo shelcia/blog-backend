@@ -21,6 +21,7 @@ module.exports.handleImageUpload = (req, res, next) => {
         status: "500",
         message: "A Multer error occurred when uploading",
       });
+      // eslint-disable-next-line no-dupe-else-if
     } else if (err) {
       res.status(200).send({
         status: "500",

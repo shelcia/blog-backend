@@ -4,11 +4,13 @@ const Joi = require("joi");
 const { handleImageUpload } = require("../../middleware/handleImgUpload");
 const Blog = require("../../models/Blog");
 const User = require("../../models/User");
+const verify = require("../verify");
 
 //BLOG SCHEMA
 const blogSchema = Joi.object({
   // id: Joi.string().required(),
   userId: Joi.string().required(),
+  uname: Joi.string().required(),
   title: Joi.string().required(),
   desc: Joi.string().required(),
   content: Joi.string().required(),
@@ -23,18 +25,44 @@ const blogSchema = Joi.object({
 //BLOG RELATED API
 
 // get all blogs
+router.get("/all", async (req, res) => {
+  try {
+    const results = await Blog.find({}).select({
+      userId: 1,
+      title: 1,
+      tags: 1,
+      type: 1,
+      likes: 1,
+    });
+    res.status(200).json({ status: "200", message: results });
+  } catch (error) {
+    // console.log(error);
+    res.status(500).json({ status: "500", message: "Error" });
+  }
+});
+
+// get all published blogs
 router.get("/", async (req, res) => {
   try {
     const results = await Blog.find({}).where("type").equals("PUBLISHED");
-    res.status(200).send({ status: "200", message: results });
+    res.status(200).json({ status: "200", message: results });
   } catch (error) {
     // console.log(error);
-    res.status(200).send({ status: "500", message: "Error" });
+    res.status(500).json({ status: "500", message: "Error" });
   }
 });
 
 router.get("/featuredposts", async (req, res) => {
   const results = await Blog.find()
+    .select({
+      userId: 1,
+      title: 1,
+      desc: 1,
+      tags: 1,
+      // type: 1,
+      date: 1,
+      likes: 1,
+    })
     .sort({ likes: -1 })
     .where("type")
     .equals("PUBLISHED")
@@ -59,25 +87,30 @@ router.get("/image/:id", async (req, res) => {
   }
 });
 
-router.post("/", handleImageUpload, async (req, res) => {
-  // console.log(req.body);
-  const { error } = await blogSchema.validateAsync(req.body);
-  if (error) {
-    res.status(200).send({ status: "400", message: error });
-    return;
-  }
-
-  let updatedBlog = req.body;
-
-  if (req.file) updatedBlog.image = req.file.buffer;
-  updatedBlog.comments = [];
-  updatedBlog.likes = [];
-  updatedBlog.tags = JSON.parse(updatedBlog.tags);
-
-  const blog = new Blog(updatedBlog);
-  await blog.save();
-  res.status(200).send({ status: "200", message: "Successfully Created" });
+//Add Blogs
+router.post("/", handleImageUpload, verify, async (req, res) => {
   try {
+    // console.log(req.body);
+    if (req.body.type === "PUBLISHED") {
+      const { error } = await blogSchema.validateAsync(req.body);
+      if (error) {
+        res.status(200).send({ status: "400", message: error });
+        return;
+      }
+    }
+
+    let updatedBlog = req.body;
+
+    if (req.file) updatedBlog.image = req.file.buffer;
+    updatedBlog.comments = [];
+    updatedBlog.likes = [];
+    updatedBlog.tags = JSON.parse(updatedBlog.tags);
+
+    // console.log(updatedBlog);
+
+    const blog = new Blog(updatedBlog);
+    await blog.save();
+    res.status(200).send({ status: "200", message: "Successfully Created" });
   } catch (error) {
     console.log(error);
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
@@ -86,14 +119,16 @@ router.post("/", handleImageUpload, async (req, res) => {
 
 // UPDATE BLOGS
 
-router.put("/blog/:id", handleImageUpload, async (req, res) => {
+router.put("/blog/:id", handleImageUpload, verify, async (req, res) => {
   let updatedBlog = req.body;
-
-  if (req.file) updatedBlog.image = req.file.buffer;
   try {
+    if (req.body?.tags) {
+      updatedBlog.tags = JSON.parse(updatedBlog.tags);
+    }
+    if (req.file) updatedBlog.image = req.file.buffer;
     const blog = await Blog.findById(req.params.id).exec();
     blog.set(updatedBlog);
-    const result = await blog.save();
+    await blog.save();
     // res.send(result);
     res.status(200).send({ status: "200", message: "Successfully Edited" });
   } catch (error) {
@@ -103,7 +138,7 @@ router.put("/blog/:id", handleImageUpload, async (req, res) => {
 
 // UPDATE TYPE
 
-router.put("/type/:id", handleImageUpload, async (req, res) => {
+router.put("/type/:id", handleImageUpload, verify, async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id).exec();
     blog.set({ ...blog, type: req.body.type });
@@ -111,14 +146,14 @@ router.put("/type/:id", handleImageUpload, async (req, res) => {
     if (req.body.type === "DRAFTS") {
       res
         .status(200)
-        .send({ status: "200", message: "Successfully Unpublished" });
+        .json({ status: "200", message: "Successfully Unpublished" });
     } else {
       res
         .status(200)
-        .send({ status: "200", message: "Successfully Published" });
+        .json({ status: "200", message: "Successfully Published" });
     }
   } catch (error) {
-    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+    res.status(500).json({ status: "500", message: "Internal Servor Error" });
   }
 });
 
@@ -133,9 +168,9 @@ router.put("/comments/:id", async (req, res) => {
     // const result = await blog.save();
     res
       .status(200)
-      .send({ status: "200", message: "Successfully Added Comments" });
+      .json({ status: "200", message: "Successfully Added Comments" });
   } catch (error) {
-    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+    res.status(500).json({ status: "500", message: "Internal Servor Error" });
   }
 });
 
@@ -143,24 +178,19 @@ router.put("/comments/:id", async (req, res) => {
 router.put("/likes/:id", async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id).exec();
-
-    // console.log(
-    //   req.body?.likedBlogs[req.body?.likedBlogs?.length - 1],
-    //   req.params.id
-    // );
+    const user = await User.findById(req.body.userId).exec();
 
     const blogLikes = blog?.likes.map((item) => item.userId);
 
-    // console.log(blogLikes, req.body.userId);
-
+    // the user has already liked
     if (blogLikes?.includes(req.body.userId)) {
-      const updateLikes = req.body.likes.filter(
+      const updateLikes = blog.likes.filter(
         (like) => like.userId !== req.body.userId
       );
       await Blog.findByIdAndUpdate(req.params.id, { likes: updateLikes });
 
-      const updateLikeBlogs = req.body?.likedBlogs?.filter(
-        (like) => like !== req.params.id
+      const updateLikeBlogs = user?.likedBlogs?.filter(
+        (like) => like.blogId !== req.params.id
       );
 
       await User.findByIdAndUpdate(req.body.userId, {
@@ -170,46 +200,75 @@ router.put("/likes/:id", async (req, res) => {
         .status(200)
         .send({ status: "200", message: "Successfully Removed Like" });
     } else {
-      await Blog.findByIdAndUpdate(req.params.id, { likes: req.body.likes });
-      const user = await User.findByIdAndUpdate(req.body.userId, {
-        likedBlogs: req.body.likedBlogs,
+      const updateLikes = [
+        ...blog.likes,
+        { userId: req.body.userId, date: Date.now() },
+      ];
+      await Blog.findByIdAndUpdate(req.params.id, { likes: updateLikes });
+
+      const updateLikeBlogs = [
+        ...user.likedBlogs,
+        { blogId: req.params.id, date: Date.now() },
+      ];
+
+      await User.findByIdAndUpdate(req.body.userId, {
+        likedBlogs: updateLikeBlogs,
       });
-      // const user = await User.findById(req.body.userId).exec();
-      // console.log(user);
       res
         .status(200)
-        .send({ status: "200", message: "Successfully Added Like" });
+        .json({ status: "200", message: "Successfully Added Like" });
     }
   } catch (error) {
-    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+    res.status(500).json({ status: "400", message: "Internal Servor Error" });
   }
 });
 
 // save posts
 router.put("/savedposts/:id", async (req, res) => {
   try {
-    // await Blog.findByIdAndUpdate(req.params.id, { likes: req.body.likes });
-    const user = await User.findOne({ userId: req.body.userId }).exec();
+    const blog = await Blog.findById(req.params.id).exec();
+    const user = await User.findById(req.body.userId).exec();
 
-    if (user.savedBlogs.includes(req.params.id)) {
-      const updateSavedBlogs = req.body?.savedBlogs?.filter(
-        (save) => save !== req.params.id
+    const blogSaves = blog?.saved.map((item) => item.userId);
+
+    // the user has already liked
+    if (blogSaves?.includes(req.body.userId)) {
+      const updateSaves = blog.saved.filter(
+        (like) => like.userId !== req.body.userId
+      );
+      await Blog.findByIdAndUpdate(req.params.id, { saved: updateSaves });
+
+      const updateSavedBlogs = user?.savedBlogs?.filter(
+        (like) => like.blogId !== req.params.id
       );
 
-      await User.findOneAndUpdate(
-        { userId: req.body.userId },
-        { savedBlogs: updateSavedBlogs }
-      );
+      await User.findByIdAndUpdate(req.body.userId, {
+        savedBlogs: updateSavedBlogs,
+      });
+      res
+        .status(200)
+        .send({ status: "200", message: "Successfully Removed Bookmark" });
     } else {
-      await User.findOneAndUpdate(
-        { userId: req.body.userId },
-        { savedBlogs: req.body.savedBlogs }
-      );
-    }
+      const updateSaves = [
+        ...blog.saved,
+        { userId: req.body.userId, date: Date.now() },
+      ];
+      await Blog.findByIdAndUpdate(req.params.id, { saved: updateSaves });
 
-    res.status(200).send({ status: "200", message: "Successfully Saved" });
+      const updateSavedBlogs = [
+        ...user.savedBlogs,
+        { blogId: req.params.id, date: Date.now() },
+      ];
+
+      await User.findByIdAndUpdate(req.body.userId, {
+        savedBlogs: updateSavedBlogs,
+      });
+      res
+        .status(200)
+        .json({ status: "200", message: "Successfully Added Bookmark" });
+    }
   } catch (error) {
-    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+    res.status(500).json({ status: "400", message: "Internal Servor Error" });
   }
 });
 
@@ -217,7 +276,7 @@ router.get("/myblogs/:id", async (req, res) => {
   try {
     const results = await Blog.find({
       userId: req.params.id,
-    }).exec();
+    }).select({ userId: 1, title: 1, desc: 1, tags: 1, type: 1, date: 1 });
     res.status(200).send({ status: "200", message: results });
   } catch (error) {
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
@@ -227,8 +286,61 @@ router.get("/myblogs/:id", async (req, res) => {
 // get blog by id
 router.get("/:id", async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).exec();
+    const blog = await Blog.findById(req.params.id).select({
+      userId: 1,
+      title: 1,
+      desc: 1,
+      tags: 1,
+      type: 1,
+      date: 1,
+      content: 1,
+      likes: 1,
+      comments: 1,
+    });
     res.status(200).send({ status: "200", message: blog });
+  } catch (error) {
+    console.log(error);
+    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+  }
+});
+
+router.get("/by-uname/:id", async (req, res) => {
+  try {
+    const blogs = await Blog.find({ uname: req.params.id }).select({
+      userId: 1,
+      title: 1,
+      desc: 1,
+      tags: 1,
+      type: 1,
+      date: 1,
+      content: 1,
+      likes: 1,
+      // comments: 1,
+    });
+    res.status(200).send({ status: "200", message: blogs });
+  } catch (error) {
+    console.log(error);
+    res.status(200).send({ status: "400", message: "Internal Servor Error" });
+  }
+});
+
+router.get("/by-uname-published/:id", async (req, res) => {
+  try {
+    const blogs = await Blog.find({ uname: req.params.id })
+      .select({
+        userId: 1,
+        title: 1,
+        desc: 1,
+        tags: 1,
+        type: 1,
+        date: 1,
+        content: 1,
+        likes: 1,
+      })
+      .sort({ date: -1 })
+      .where("type")
+      .equals("PUBLISHED");
+    res.status(200).send({ status: "200", message: blogs });
   } catch (error) {
     console.log(error);
     res.status(200).send({ status: "400", message: "Internal Servor Error" });
@@ -254,9 +366,10 @@ router.put("/myblogs/edit/:id", async (req, res) => {
   }
 });
 
-router.delete("/myblogs/delete/:id", async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
-    await Blog.findOneAndDelete({ id: req.params.id.toString() });
+    // await Blog.findOneAndDelete({ id: req.params.id.toString() });
+    await Blog.findByIdAndDelete(req.params.id);
     res
       .status(200)
       .send({ status: "200", message: "Successfully Deleted the Blog" });
